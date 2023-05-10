@@ -29,14 +29,14 @@ RUN \
         cargo \
         libffi \
     && apk add --no-cache --virtual .build-dependencies \
-        libffi-dev \
+        libffi-dev openssl-dev \
     && if [ "${BUILD_ARCH}" = "i386" ]; then \
         export NPY_DISABLE_SVML=1; \
     fi \
     && pip3 install --no-cache-dir \
         -r /usr/src/requirements.txt \
         -r /usr/src/requirements_${CPYTHON_ABI}.txt \
-        --find-links "https://wheels.home-assistant.io/musllinux/" \
+        --find-links "https://wheels.jhaos.dev/musllinux/" \
     && rm -rf /usr/src/*
 
 # Install auditwheel
