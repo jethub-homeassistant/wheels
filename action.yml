@@ -1,4 +1,4 @@
-name: "Home Assistant wheels builder"
+name: "JH Home Assistant wheels builder"
 description: "Builds and publishes python wheels"
 inputs:
   tag:
@@ -57,13 +57,13 @@ inputs:
     required: false
   wheels-host:
     description: "wheels host URL"
-    default: "wheels.hass.io"
+    default: "wheels.jhaos.dev"
   wheels-user:
     description: "User for wheels host"
     default: "wheels"
   wheels-index:
     description: "The wheels index URL"
-    default: "https://wheels.home-assistant.io"
+    default: "https://wheels.jhaos.dev"
 
 runs:
   using: "composite"
@@ -72,7 +72,7 @@ runs:
       id: version
       run: |
         input="${GITHUB_ACTION_PATH##*/}"
-        if [[ "${input}" == "master" ]] || [[ -z "${input}" ]]; then
+        if [[ "${input}" == "master" ]] || [[ "${input}" == "master-jethub" ]] || [[ -z "${input}" ]]; then
           input="dev"
         fi
         echo "version=${input}" >> $GITHUB_OUTPUT
@@ -87,23 +87,23 @@ runs:
 
           # Validate & update known_hosts
           ssh-keygen -y -e -f .ssh/id_rsa
-          ssh-keyscan -H ${{ inputs.wheels-host }} >> .ssh/known_hosts
+          ssh-keyscan -t rsa -H ${{ inputs.wheels-host }} >> .ssh/known_hosts
           chmod 600 .ssh/*
         fi
 
-    - uses: home-assistant/actions/helpers/cas@master
+    - uses: jethub-homeassistant/actions/helpers/cas@master-jethub
 
     - shell: bash
       id: pull
       run: |
-        name="ghcr.io/home-assistant/wheels/${{ inputs.arch }}/${{ inputs.tag }}/${{ inputs.abi }}:${{ steps.version.outputs.version }}"
+        name="ghcr.io/jethub-homeassistant/wheels/${{ inputs.arch }}/${{ inputs.tag }}/${{ inputs.abi }}:${{ steps.version.outputs.version }}"
         docker pull "$name"
         echo "name=$name" >> $GITHUB_OUTPUT
 
     - shell: bash
       run: |
         for j in {1..15}; do
-          if CAS_API_KEY= cas authenticate --silent --signerID notary@home-assistant.io docker://${{ steps.pull.outputs.name }}; then
+          if CAS_API_KEY= cas authenticate --silent --signerID vb@jethome.ru docker://${{ steps.pull.outputs.name }}; then
             exit 0
           fi
           sleep $((5 * j))
@@ -179,7 +179,7 @@ runs:
           ${{ steps.pull.outputs.name }} \
           --index "${{ inputs.wheels-index }}" \
           --upload rsync \
-          --remote "${{ inputs.wheels-user }}@${{ inputs.wheels-host }}:/opt/wheels" \
+          --remote "${{ inputs.wheels-user }}@${{ inputs.wheels-host }}:/var/www/wheels" \
           ${{ steps.options.outputs.build }}
 
     - shell: bash
