@@ -36,7 +36,7 @@ RUN \
     && pip3 install --no-cache-dir \
         -r /usr/src/requirements.txt \
         -r /usr/src/requirements_${CPYTHON_ABI}.txt \
-        --extra-index-url "https://wheels.home-assistant.io/musllinux-index/" \
+        --extra-index-url "https://wheels.iot.jethome.ru/musllinux-index/" \
     && rm -rf /usr/src/*
 
 # Install auditwheel
