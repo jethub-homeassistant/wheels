@@ -1,16 +1,16 @@
-name: "Publish"
+name: "JH Publish"
 
 on:
   release:
     types: [published]
   push:
     branches:
-      - master
+      - master-jethub
 
 jobs:
   publish:
     name: Publish builder
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER }}
     strategy:
       fail-fast: False
       matrix:
@@ -30,14 +30,14 @@ jobs:
         run: |
           declare -a docker
 
-          name="ghcr.io/home-assistant/wheels/${{ matrix.arch }}/${{ matrix.tag }}/${{ matrix.abi }}"
+          name="ghcr.io/jethub-homeassistant/wheels/${{ matrix.arch }}/${{ matrix.tag }}/${{ matrix.abi }}"
 
           version=$(echo "${{ github.ref }}" | awk -F"/" '{print $NF}' )
           if [ "${version}" = "master" ]; then
             version=dev
           fi
 
-          base="ghcr.io/home-assistant/${{ matrix.arch }}-base-python:${{ matrix.base }}"
+          base="ghcr.io/jethub-homeassistant/${{ matrix.arch }}-base-python:${{ matrix.base }}"
 
           if [ "${{ matrix.arch }}" = "armhf" ]; then
             docker+=("--build-arg QEMU_CPU=arm1176")
