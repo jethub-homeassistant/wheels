@@ -1,0 +1,39 @@
+name: JH Build basic wheels [tmp]
+
+on:
+  workflow_dispatch:
+
+jobs:
+  wheels:
+    name: Build basic wheels
+    if: github.repository_owner == 'jethub-homeassistant'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: ["cp312", "cp313"]
+        arch: ["aarch64", "armhf", "armv7", "amd64", "i386"]
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v4.2.2
+
+      - name: Pull-Request test
+        id: test
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "is_test=True" >> $GITHUB_OUTPUT
+          else
+            echo "is_test=False" >> $GITHUB_OUTPUT
+          fi
+      - name: Build wheels
+        uses: ./
+        with:
+          abi: ${{ matrix.abi }}
+          tag: musllinux_1_2
+          arch: ${{ matrix.arch }}
+          wheels-key: ${{ secrets.WHEELS_KEY }}
+          test: ${{ steps.test.outputs.is_test }}
+          apk: "mariadb-dev;postgresql-dev;libffi-dev;openblas-dev"
+          skip-binary: "cython"
+          requirements: "requirements_wheels.txt"
