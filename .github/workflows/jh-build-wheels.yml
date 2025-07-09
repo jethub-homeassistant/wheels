@@ -7,7 +7,7 @@ jobs:
   wheels:
     name: Build basic wheels
     if: github.repository_owner == 'jethub-homeassistant'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER }}
     strategy:
       fail-fast: false
       matrix:
